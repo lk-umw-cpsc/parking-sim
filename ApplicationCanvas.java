@@ -4,6 +4,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -20,7 +22,8 @@ import vector.Quaternion;
 import vector.Vector2D;
 import vector.Vector3D;
 
-public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, FrameUpdateListener {
+public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener,
+        FrameUpdateListener, KeyListener {
     
     // the width and height of the canvas, in pixels
     private static final int CANVAS_WIDTH_HEIGHT = 600;
@@ -33,7 +36,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private static final double ROOM_LENGTH = 2.0;
     private static final double ROOM_WIDTH = 2.0;
 
-    private static final double TOLERANCE = 0.1;
+    private static final double LOCATION_TOLERANCE = 0.1;
+    private static final double ROTATION_TOLERANCE = 0.03;
 
     private static final int FRONT_CAR = 0;
     private static final int BACK_CAR = 1;
@@ -51,7 +55,13 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private Vector3D frontCarInitialPosition;
     private Vector3D backCarInitialPosition;
     private Vector3D playerCarGoalPosition;
+
+    private Quaternion frontCarInitialRotation;
+    private Quaternion backCarInitialRotation;
     private Quaternion playerCarGoalRotation;
+
+    private double[] initialRotations = new double[3];
+    private double[] rotations = new double[3];
 
     private Vector2D laneDirection;
 
@@ -87,6 +97,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         sceneObjects[0] = frontCar;
         sceneObjects[1] = backCar;
         sceneObjects[2] = playerCar;
+
+        rotations[0] = 0.79;
 
         frontCar.moveTo(0.5, 0.5, 0);
         backCar.moveTo(-0.5, -0.5, 0);
@@ -142,7 +154,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         p.x -= halfImageWidth;
         p.y -= halfImageHeight;
 
-        AffineTransform tx = AffineTransform.getRotateInstance(-rot, halfImageWidth, halfImageHeight);
+        AffineTransform tx = AffineTransform.getRotateInstance(-(rot + rotations[0] - initialRotations[0]), halfImageWidth, halfImageHeight);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
         // Drawing the rotated image at the required drawing locations
@@ -180,21 +192,29 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     @Override
     public void rigidBodyUpdateReceived(int id, float x, float y, float z,
             float qx, float qy, float qz, float qw) {
+        Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
+        double rotation = quaternion.toForwardVector().to2DDirectionVector().getTheta();
+        rotations[id] = rotation;
         switch (id) {
             case FRONT_CAR:
                 if (frontCarInitialPosition == null) {
                     frontCarInitialPosition = new Vector3D(x, y, z);
+                    frontCarInitialRotation = quaternion;
+                    initialRotations[0] = rotation;
                 }
                 break;
             case BACK_CAR:
                 if (backCarInitialPosition == null) {
                     backCarInitialPosition = new Vector3D(x, y, z);
+                    backCarInitialRotation = quaternion;
+                    initialRotations[1] = rotation;
                 }
                 break;
             case PLAYER_CAR:
                 if (playerCarGoalPosition == null) {
                     playerCarGoalPosition = new Vector3D(x, y, z);
-                    playerCarGoalRotation = new Quaternion(qx, qy, qz, qw);
+                    playerCarGoalRotation = quaternion;
+                    initialRotations[2] = rotation;
                 }
         }
         SceneObject obj = sceneObjects[id];
@@ -204,14 +224,14 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     @Override
     public void frameUpdateReceived() {
-        if (frontCar.getLocation().distanceFrom(frontCarInitialPosition) > TOLERANCE) {
+        if (frontCar.getLocation().distanceFrom(frontCarInitialPosition) > LOCATION_TOLERANCE) {
             System.out.println("Game over! Front car bumped!");
         }
-        if (backCar.getLocation().distanceFrom(backCarInitialPosition) > TOLERANCE) {
-            System.out.println("Game over! Front car bumped!");
+        if (backCar.getLocation().distanceFrom(backCarInitialPosition) > LOCATION_TOLERANCE) {
+            System.out.println("Game over! Rear car bumped!");
         }
-        if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < TOLERANCE
-                && false) {
+        if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < LOCATION_TOLERANCE
+                && Math.abs(rotations[PLAYER_CAR] - initialRotations[PLAYER_CAR]) < 0.087) {
             System.out.println("You win!");
         }
         if (laneDirection == null && frontCarInitialPosition != null
@@ -222,6 +242,22 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
             rot = Math.atan2(laneDirection.y, laneDirection.x);
         }
         repaint();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        playing = true;
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

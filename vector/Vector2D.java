@@ -53,4 +53,8 @@ public class Vector2D {
         return new Vector2D(dx / d, dy / d);
     }
 
+    public double getTheta() {
+        return Math.atan2(y, x);
+    }
+
 }
