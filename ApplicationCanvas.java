@@ -116,6 +116,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         CommandStreamManager streamManager = new CommandStreamManager();
         streamManager.addRigidBodyUpdateListener(this);
         new Thread(streamManager).start();
+        addKeyListener(this);
     }
 
     private BufferedImage squarifyImage(BufferedImage img) {
