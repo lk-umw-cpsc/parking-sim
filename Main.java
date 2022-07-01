@@ -12,7 +12,9 @@ public class Main {
 
     private static void initiateSwingComponents() {
         // create a new ApplicationFrame (our main window) and make it visible
-        new ApplicationFrame().setVisible(true);
+        ApplicationFrame frame = new ApplicationFrame();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
 }
