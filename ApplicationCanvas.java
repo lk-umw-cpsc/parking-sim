@@ -2,13 +2,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import motive.CommandStreamManager;
 import motive.FrameUpdateListener;
+import motive.Quaternion;
 import motive.RigidBodyUpdateListener;
+import vector.Vector3D;
 
 public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, FrameUpdateListener {
     
@@ -25,6 +32,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     private static final double TOLERANCE = 0.1;
 
+    private static final int FRONT_CAR = 0;
+    private static final int BACK_CAR = 1;
+    private static final int PLAYER_CAR = 2;
+
     private double roomXLowerBound = ROOM_X_LOWER_LIMIT;
     private double roomYLowerBound = ROOM_Y_LOWER_LIMIT;
     private double roomWidth = ROOM_WIDTH;
@@ -34,15 +45,40 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private SceneObject backCar;
     private SceneObject playerCar;
 
+    private Vector3D frontCarInitialPosition;
+    private Vector3D backCarInitialPosition;
+    private Vector3D playerCarGoalPosition;
+    private Quaternion playerCarGoalRotation;
+
+    private boolean playing;
+
     private SceneObject[] sceneObjects = new SceneObject[3];
+
+    private Image[] carImages = new Image[3];
 
     public ApplicationCanvas() {
         // set size of the canvas
         setPreferredSize(new Dimension(CANVAS_WIDTH_HEIGHT, CANVAS_WIDTH_HEIGHT));
 
+        frontCar = new SceneObject();
+        backCar = new SceneObject();
+        playerCar = new SceneObject();
+
+        try {
+            carImages[0] = ImageIO.read(new File("images/car-green.png"));
+            carImages[1] = ImageIO.read(new File("images/car-yellow.png"));
+            carImages[2] = ImageIO.read(new File("images/car-purple.png"));
+        } catch (IOException e) {
+            System.out.println("Unable to load car images!");
+            e.printStackTrace();
+        }
+
         sceneObjects[0] = frontCar;
         sceneObjects[1] = backCar;
         sceneObjects[2] = playerCar;
+
+        frontCar.moveTo(0.5, 0.5, 0);
+        backCar.moveTo(-0.5, -0.5, 0);
 
         // begin listening for updates from Motive
         CommandStreamManager streamManager = new CommandStreamManager();
@@ -52,15 +88,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     // colors for the dots drawn to the screen
     private static final Color BACKGROUND_COLOR = new Color(51, 51, 51);
-    private static final Color PLAYER_DOT_COLOR = new Color(227, 0, 170);
-    private static final Color PICKUP_DOT_COLOR = new Color(154, 189, 0);
-
-    // radius of the dots drawn to screen, in pixels
-    private static final int PLAYER_DOT_RADIUS = 15;
-    private static final int PICKUP_DOT_RADIUS = 15;
 
     @Override
     public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D)g;
         // turn on shape anti-aliasing (reduces jagged pixels)
         setRenderingHints(g);
         final int width = getWidth();
@@ -70,7 +101,19 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
         
-        // draw each dot
+        
+        for (int car = 0; car < 3; car++) {
+            
+            drawCar(g2d, width, height, carImages[car], sceneObjects[car]);
+        }
+    }
+
+    private void drawCar(Graphics2D g, int width, int height, Image image, SceneObject car) {
+        Point p = car.getScreenLocation(roomXLowerBound, roomYLowerBound,
+                roomWidth, roomLength, width, height);
+        p.x -= image.getWidth(null) / 2;
+        p.y -= image.getHeight(null) / 2;
+        g.drawImage(image, p.x, p.y, null);
     }
 
     /**
@@ -78,29 +121,9 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
      * @param graphics The Graphics object to set rendering hints on
      */
     private static void setRenderingHints(Graphics graphics) {
-        Graphics2D g = (Graphics2D)graphics;
+        Graphics2D g = (Graphics2D) graphics;
         // Enable anti-aliasing for shapes
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    }
-
-    /**
-     * Converts a 3d coordinate's X coordinate to a screen coordinate
-     * @param x the X coordinate to translate
-     * @return a translated X coordinate
-     */
-    private int coordinate3dToScreenCoordinateX(double x) {
-        final int canvasWidth = getWidth();
-        return (int) ((x - roomXLowerBound) / roomWidth * canvasWidth);
-    }
-
-    /**
-     * Converts a 3d coordinate's Y coordinate to a screen coordinate
-     * @param y the Y coordinate to translate
-     * @return a translated Y coordinate
-     */
-    private int coordinate3dToScreenCoordinateY(double y) {
-        final int canvasHeight = getHeight();
-        return (int) -((y + roomYLowerBound) / roomLength * canvasHeight);
     }
 
     /**
@@ -119,12 +142,26 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         repaint();
     }
 
-    /**
-     * Method called by motive when the RC vehicle's location is updated
-     */
     @Override
     public void rigidBodyUpdateReceived(int id, float x, float y, float z,
             float a, float b, float c, float d) {
+        switch (id) {
+            case FRONT_CAR:
+                if (frontCarInitialPosition == null) {
+                    frontCarInitialPosition = new Vector3D(x, y, z);
+                }
+                break;
+            case BACK_CAR:
+                if (backCarInitialPosition == null) {
+                    backCarInitialPosition = new Vector3D(x, y, z);
+                }
+                break;
+            case PLAYER_CAR:
+                if (playerCarGoalPosition == null) {
+                    playerCarGoalPosition = new Vector3D(x, y, z);
+                    playerCarGoalRotation = new Quaternion(a, b, c, d);
+                }
+        }
         SceneObject obj = sceneObjects[id];
         obj.moveTo(x, y, z);
         obj.rotateTo(a, b, c, d);
@@ -132,6 +169,16 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     @Override
     public void frameUpdateReceived() {
+        if (frontCar.getLocation().distanceFrom(frontCarInitialPosition) > TOLERANCE) {
+            System.out.println("Game over! Front car bumped!");
+        }
+        if (backCar.getLocation().distanceFrom(backCarInitialPosition) > TOLERANCE) {
+            System.out.println("Game over! Front car bumped!");
+        }
+        if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < TOLERANCE
+                && false) {
+            // sdf
+        }
         repaint();
     }
 
