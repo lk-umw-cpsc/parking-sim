@@ -1,5 +1,5 @@
 package motive;
 
 public interface FrameUpdateListener {
-    void update();
+    void frameUpdateReceived();
 }

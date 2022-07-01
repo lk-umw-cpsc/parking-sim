@@ -3,17 +3,16 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Random;
 
 import javax.swing.JPanel;
 
 import motive.CommandStreamManager;
+import motive.FrameUpdateListener;
 import motive.RigidBodyUpdateListener;
 import vector.Vector2D;
 
-public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, MouseListener {
+public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, FrameUpdateListener {
     
     private static final boolean TEST_MODE = false;
 
@@ -51,7 +50,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         rng = new Random();
 
         if (TEST_MODE) {
-            addMouseListener(this);
+
         } else {
             // begin listening for updates from Motive
             CommandStreamManager streamManager = new CommandStreamManager();
@@ -152,7 +151,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
      * Method called by motive when the RC vehicle's location is updated
      */
     @Override
-    public void update(int id, float x, float y, float z) {
+    public void rigidBodyUpdateReceived(int id, float x, float y, float z) {
         // Update the player location, and the z coordinate of the pickup
         playerLocation.x = x;
         playerLocation.y = y;
@@ -168,37 +167,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-        
-    }
-
-    /**
-     * Used for testing purposes
-     * @param e Event information from Swing
-     */
-    @Override
-    public void mousePressed(MouseEvent e) {
-        int screenX = e.getX();
-        int screenY = -e.getY();
-        float unitX = screenX / (float) getWidth();
-        float unitY = screenY / (float) getHeight();
-
-        update(0, (float)(unitX * roomWidth + roomXLowerBound), 
-                (float)(unitY * roomLength - roomYLowerBound), 0.0f);
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
+    public void frameUpdateReceived() {
         
     }
 

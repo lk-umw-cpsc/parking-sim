@@ -178,7 +178,7 @@ public class CommandStreamManager implements Runnable {
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
             for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
                 if (listener != null)
-                    listener.update(bodyID, x, y, z);
+                    listener.rigidBodyUpdateReceived(bodyID, x, y, z);
             }
             float[] quaternions = new float[4];
             // unneeded rotational information
@@ -250,7 +250,7 @@ public class CommandStreamManager implements Runnable {
         //     }
         // }
         for (FrameUpdateListener listener : frameUpdateListeners) {
-            listener.update();
+            listener.frameUpdateReceived();
         }
     }
     
@@ -305,7 +305,7 @@ public class CommandStreamManager implements Runnable {
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
             for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
                 if (listener != null)
-                    listener.update(bodyID, x, y, z);
+                    listener.rigidBodyUpdateReceived(bodyID, x, y, z);
             }
             float[] quaternions = new float[4];
             // unneeded rotational information
@@ -356,7 +356,7 @@ public class CommandStreamManager implements Runnable {
         //     }
         // }
         for (FrameUpdateListener listener : frameUpdateListeners) {
-            listener.update();
+            listener.frameUpdateReceived();
         }
     }
 
@@ -413,7 +413,7 @@ public class CommandStreamManager implements Runnable {
             float z = buffer.getFloat();
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
             for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
-                listener.update(bodyID, x, y, z);
+                listener.rigidBodyUpdateReceived(bodyID, x, y, z);
             }
             float[] quaternions = new float[4];
             // unneeded rotational information
@@ -466,7 +466,7 @@ public class CommandStreamManager implements Runnable {
         //     }
         // }
         for (FrameUpdateListener listener : frameUpdateListeners) {
-            listener.update();
+            listener.frameUpdateReceived();
         }
     }
     
