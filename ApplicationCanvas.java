@@ -2,9 +2,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -13,8 +15,9 @@ import javax.swing.JPanel;
 
 import motive.CommandStreamManager;
 import motive.FrameUpdateListener;
-import motive.Quaternion;
 import motive.RigidBodyUpdateListener;
+import vector.Quaternion;
+import vector.Vector2D;
 import vector.Vector3D;
 
 public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, FrameUpdateListener {
@@ -50,11 +53,15 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private Vector3D playerCarGoalPosition;
     private Quaternion playerCarGoalRotation;
 
+    private Vector2D laneDirection;
+
     private boolean playing;
 
     private SceneObject[] sceneObjects = new SceneObject[3];
 
-    private Image[] carImages = new Image[3];
+    private BufferedImage[] carImages = new BufferedImage[3];
+
+    private double rot;
 
     public ApplicationCanvas() {
         // set size of the canvas
@@ -73,6 +80,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
             e.printStackTrace();
         }
 
+        for (int i = 0; i < carImages.length; i++) {
+            carImages[i] = squarifyImage(carImages[i]);
+        }
+
         sceneObjects[0] = frontCar;
         sceneObjects[1] = backCar;
         sceneObjects[2] = playerCar;
@@ -80,10 +91,26 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         frontCar.moveTo(0.5, 0.5, 0);
         backCar.moveTo(-0.5, -0.5, 0);
 
+        Vector2D fc2d = new Vector2D(frontCar.getLocation().x, frontCar.getLocation().y);
+        Vector2D pc2d = new Vector2D(playerCar.getLocation().x, playerCar.getLocation().y);
+
+        laneDirection = pc2d.directionTowards(fc2d);
+        // atan2 converts unit vector to radians
+        rot = Math.atan2(laneDirection.y, laneDirection.x);
+        // rot = Math.PI / 2;
+        System.out.printf("%.2f %.2f; %.2f", laneDirection.x, laneDirection.y, rot);
+
         // begin listening for updates from Motive
         CommandStreamManager streamManager = new CommandStreamManager();
         streamManager.addRigidBodyUpdateListener(this);
         new Thread(streamManager).start();
+    }
+
+    private BufferedImage squarifyImage(BufferedImage img) {
+        int newWidthHeight = Math.max(img.getWidth(), img.getHeight());
+        BufferedImage newImg = new BufferedImage(newWidthHeight, newWidthHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        newImg.getGraphics().drawImage(img, 0, newWidthHeight / 4, null);
+        return newImg;
     }
 
     // colors for the dots drawn to the screen
@@ -101,19 +128,27 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
         
-        
         for (int car = 0; car < 3; car++) {
-            
             drawCar(g2d, width, height, carImages[car], sceneObjects[car]);
         }
     }
 
-    private void drawCar(Graphics2D g, int width, int height, Image image, SceneObject car) {
+    private void drawCar(Graphics2D g, int width, int height, BufferedImage image, SceneObject car) {
         Point p = car.getScreenLocation(roomXLowerBound, roomYLowerBound,
                 roomWidth, roomLength, width, height);
-        p.x -= image.getWidth(null) / 2;
-        p.y -= image.getHeight(null) / 2;
-        g.drawImage(image, p.x, p.y, null);
+        int halfImageWidth = image.getWidth(null) / 2;
+        int halfImageHeight = image.getHeight(null) / 2;
+
+        p.x -= halfImageWidth;
+        p.y -= halfImageHeight;
+
+        AffineTransform tx = AffineTransform.getRotateInstance(-rot, halfImageWidth, halfImageHeight);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+        // Drawing the rotated image at the required drawing locations
+        g.drawImage(op.filter(image, null), p.x, p.y, null);
+
+        // g.drawImage(image, p.x, p.y, null);
     }
 
     /**
@@ -144,7 +179,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     @Override
     public void rigidBodyUpdateReceived(int id, float x, float y, float z,
-            float a, float b, float c, float d) {
+            float qx, float qy, float qz, float qw) {
         switch (id) {
             case FRONT_CAR:
                 if (frontCarInitialPosition == null) {
@@ -159,12 +194,12 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
             case PLAYER_CAR:
                 if (playerCarGoalPosition == null) {
                     playerCarGoalPosition = new Vector3D(x, y, z);
-                    playerCarGoalRotation = new Quaternion(a, b, c, d);
+                    playerCarGoalRotation = new Quaternion(qx, qy, qz, qw);
                 }
         }
         SceneObject obj = sceneObjects[id];
         obj.moveTo(x, y, z);
-        obj.rotateTo(a, b, c, d);
+        obj.rotateTo(qx, qy, qz, qw);
     }
 
     @Override
@@ -177,7 +212,14 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         }
         if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < TOLERANCE
                 && false) {
-            // sdf
+            System.out.println("You win!");
+        }
+        if (laneDirection == null && frontCarInitialPosition != null
+                && playerCarGoalPosition != null) {
+            Vector2D fc2d = new Vector2D(frontCarInitialPosition.x, frontCarInitialPosition.y);
+            Vector2D pc2d = new Vector2D(playerCarGoalPosition.x, playerCarGoalPosition.y);
+            laneDirection = pc2d.directionTowards(fc2d);
+            rot = Math.atan2(laneDirection.y, laneDirection.x);
         }
         repaint();
     }

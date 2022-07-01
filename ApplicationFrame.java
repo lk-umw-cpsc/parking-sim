@@ -17,7 +17,8 @@ public class ApplicationFrame extends JFrame {
     private final ApplicationCanvas canvas;
     
     public ApplicationFrame() {
-        super("Goal Chase Demo");
+        super("Parallel Parking Challenge");
+        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Set up menu bar with Settings menu and "Configure Room" option

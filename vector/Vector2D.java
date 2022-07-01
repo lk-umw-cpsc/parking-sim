@@ -42,4 +42,15 @@ public class Vector2D {
         return new Vector2D(x / d, y / d);
     }
 
+    public double getMagnitude() {
+        return Math.sqrt(x * x + y * y);
+    }
+
+    public Vector2D directionTowards(Vector2D v) {
+        double dx = v.x - x;
+        double dy = v.y - y;
+        double d = Math.sqrt(dx * dx + dy * dy);
+        return new Vector2D(dx / d, dy / d);
+    }
+
 }

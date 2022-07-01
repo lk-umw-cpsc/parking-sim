@@ -1,6 +1,6 @@
 import java.awt.Point;
 
-import motive.Quaternion;
+import vector.Quaternion;
 import vector.Vector3D;
 
 public class SceneObject {
@@ -18,11 +18,11 @@ public class SceneObject {
         location.z = z;
     }
 
-    public void rotateTo(double a, double b, double c, double d) {
-        rotation.a = a;
-        rotation.b = b;
-        rotation.c = c;
-        rotation.d = d;   
+    public void rotateTo(double x, double y, double z, double w) {
+        rotation.x = x;
+        rotation.y = y;
+        rotation.z = z;
+        rotation.w = w;   
     }
 
     public Vector3D getLocation() {

@@ -12,6 +12,13 @@ public class Vector3D {
         this.z = z;
     }
 
+    public Vector2D to2DDirectionVector() {
+        double dx = x;
+        double dy = y;
+        double d = Math.sqrt(dx * dx + dy * dy);
+        return new Vector2D(dx / d, dy / d);
+    }
+
     /**
      * Calculates the pathagorean distance between two 3D vectors
      * @param v the vector to calculate with
