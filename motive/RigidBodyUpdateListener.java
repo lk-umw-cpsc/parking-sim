@@ -6,5 +6,6 @@ package motive;
  * @author Lauren Knight
  */
 public interface RigidBodyUpdateListener {
-    void rigidBodyUpdateReceived(int id, float x, float y, float z);
+    void rigidBodyUpdateReceived(int id, float x, float y, float z,
+            float a, float b, float c, float d);
 }

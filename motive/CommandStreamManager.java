@@ -176,16 +176,19 @@ public class CommandStreamManager implements Runnable {
             float y = buffer.getFloat();
             float z = buffer.getFloat();
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
-            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
-                if (listener != null)
-                    listener.rigidBodyUpdateReceived(bodyID, x, y, z);
-            }
             float[] quaternions = new float[4];
             // unneeded rotational information
             quaternions[0] = buffer.getFloat();
             quaternions[1] = buffer.getFloat();
             quaternions[2] = buffer.getFloat();
             quaternions[3] = buffer.getFloat();
+
+            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
+                if (listener != null)
+                    listener.rigidBodyUpdateReceived(bodyID, x, y, z,
+                            quaternions[0], quaternions[1], 
+                            quaternions[2], quaternions[3]);
+            }
 
             // System.out.printf("rb id %d: %.2f, %.2f, %.2f ... %.2f, %.2f, %.2f, %.2f\n",
             //         bodyID, x, y, z, quaternions[0], quaternions[1], quaternions[2], quaternions[3]);
@@ -303,16 +306,20 @@ public class CommandStreamManager implements Runnable {
             float y = buffer.getFloat();
             float z = buffer.getFloat();
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
-            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
-                if (listener != null)
-                    listener.rigidBodyUpdateReceived(bodyID, x, y, z);
-            }
+            
             float[] quaternions = new float[4];
             // unneeded rotational information
             quaternions[0] = buffer.getFloat();
             quaternions[1] = buffer.getFloat();
             quaternions[2] = buffer.getFloat();
             quaternions[3] = buffer.getFloat();
+
+            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
+                if (listener != null)
+                    listener.rigidBodyUpdateReceived(bodyID, x, y, z,
+                            quaternions[0], quaternions[1], 
+                            quaternions[2], quaternions[3]);
+            }
 
             // determine what direction the body is facing based on the quaternions
             // this is strictly the rotation along the Z axis
@@ -412,15 +419,20 @@ public class CommandStreamManager implements Runnable {
             float y = buffer.getFloat();
             float z = buffer.getFloat();
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
-            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
-                listener.rigidBodyUpdateReceived(bodyID, x, y, z);
-            }
+            
             float[] quaternions = new float[4];
             // unneeded rotational information
             quaternions[0] = buffer.getFloat();
             quaternions[1] = buffer.getFloat();
             quaternions[2] = buffer.getFloat();
             quaternions[3] = buffer.getFloat();
+
+            for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
+                if (listener != null)
+                    listener.rigidBodyUpdateReceived(bodyID, x, y, z,
+                            quaternions[0], quaternions[1], 
+                            quaternions[2], quaternions[3]);
+            }
 
             // determine what direction the body is facing based on the quaternions
             // this is strictly the rotation along the Z axis
