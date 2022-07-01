@@ -98,8 +98,6 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         sceneObjects[1] = backCar;
         sceneObjects[2] = playerCar;
 
-        rotations[0] = 0.79;
-
         frontCar.moveTo(0.5, 0.5, 0);
         backCar.moveTo(-0.5, -0.5, 0);
 
@@ -142,20 +140,23 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.fillRect(0, 0, width, height);
         
         for (int car = 0; car < 3; car++) {
-            drawCar(g2d, width, height, carImages[car], sceneObjects[car]);
+            drawCar(g2d, width, height, car);
         }
     }
 
-    private void drawCar(Graphics2D g, int width, int height, BufferedImage image, SceneObject car) {
-        Point p = car.getScreenLocation(roomXLowerBound, roomYLowerBound,
+    private void drawCar(Graphics2D g, int width, int height, int car) {
+        Point p = sceneObjects[car].getScreenLocation(roomXLowerBound, roomYLowerBound,
                 roomWidth, roomLength, width, height);
+        BufferedImage image = carImages[car];
         int halfImageWidth = image.getWidth(null) / 2;
         int halfImageHeight = image.getHeight(null) / 2;
 
         p.x -= halfImageWidth;
         p.y -= halfImageHeight;
 
-        AffineTransform tx = AffineTransform.getRotateInstance(-(rot + rotations[0] - initialRotations[0]), halfImageWidth, halfImageHeight);
+        AffineTransform tx = AffineTransform.getRotateInstance(
+                -(rot + rotations[car] - initialRotations[car]), 
+                halfImageWidth, halfImageHeight);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
         // Drawing the rotated image at the required drawing locations
