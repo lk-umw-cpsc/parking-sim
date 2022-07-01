@@ -37,7 +37,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private static final double ROOM_WIDTH = 2.0;
 
     private static final double LOCATION_TOLERANCE = 0.1;
-    private static final double ROTATION_TOLERANCE = 0.03;
+    private static final double ROTATION_TOLERANCE = 0.087;
 
     private static final int FRONT_CAR = 0;
     private static final int BACK_CAR = 1;
@@ -233,7 +233,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
             System.out.println("Game over! Rear car bumped!");
         }
         if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < LOCATION_TOLERANCE
-                && Math.abs(rotations[PLAYER_CAR] - initialRotations[PLAYER_CAR]) < 0.087) {
+                && Math.abs(rotations[PLAYER_CAR] - initialRotations[PLAYER_CAR]) < ROTATION_TOLERANCE) {
             System.out.println("You win!");
         }
         if (laneDirection == null && frontCarInitialPosition != null
