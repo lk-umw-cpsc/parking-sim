@@ -9,7 +9,6 @@ import javax.swing.JPanel;
 import motive.CommandStreamManager;
 import motive.FrameUpdateListener;
 import motive.RigidBodyUpdateListener;
-import motive.SceneObject;
 
 public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener, FrameUpdateListener {
     
