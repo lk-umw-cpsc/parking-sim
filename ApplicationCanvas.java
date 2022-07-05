@@ -100,15 +100,6 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         sceneObjects[BACK_CAR] = backCar;
         sceneObjects[PLAYER_CAR] = playerCar;
 
-        Vector2D fc2d = new Vector2D(frontCar.getLocation().x, frontCar.getLocation().y);
-        Vector2D pc2d = new Vector2D(playerCar.getLocation().x, playerCar.getLocation().y);
-
-        // laneDirection = pc2d.directionTowards(fc2d);
-        // // atan2 converts unit vector to radians
-        // rot = Math.atan2(laneDirection.y, laneDirection.x);
-        // rot = Math.PI / 2;
-        //System.out.printf("%.2f %.2f; %.2f", laneDirection.x, laneDirection.y, rot);
-
         // begin listening for updates from Motive
         CommandStreamManager streamManager = new CommandStreamManager();
         streamManager.addRigidBodyUpdateListener(this);
@@ -207,8 +198,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     @Override
     public void rigidBodyUpdateReceived(int id, float x, float y, float z,
-            float qx, float qy, float qz, float qw) {
-        Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
+            float qw, float qx, float qy, float qz) {
+        Quaternion quaternion = new Quaternion(qw, qx, qy, qz);
         double rotation = quaternion.toForwardVector().to2DDirectionVector().getTheta();
         rotations[id] = rotation;
         switch (id) {
@@ -235,7 +226,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         }
         SceneObject obj = sceneObjects[id];
         obj.moveTo(x, y, z);
-        obj.rotateTo(qx, qy, qz, qw);
+        obj.rotateTo(qw, qx, qy, qz);
     }
 
     @Override

@@ -7,5 +7,5 @@ package motive;
  */
 public interface RigidBodyUpdateListener {
     void rigidBodyUpdateReceived(int id, float x, float y, float z,
-            float qx, float qy, float qz, float qw);
+            float qw, float qx, float qy, float qz);
 }

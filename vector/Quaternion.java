@@ -1,13 +1,13 @@
 package vector;
 
 public class Quaternion {
-    public double x, y, z, w;
+    public double w, x, y, z;
 
-    public Quaternion(double x, double y, double z, double w) {
+    public Quaternion(double w, double x, double y, double z) {
+        this.w = w;
         this.x = x;
         this.y = y;
         this.z = z;
-        this.w = w;
     }
 
     public Vector3D toForwardVector() {
