@@ -36,8 +36,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private static final double ROOM_LENGTH = 1.0;
     private static final double ROOM_WIDTH = 1.0;
 
-    private static final double LOCATION_TOLERANCE = 0.001;
-    private static final double ROTATION_TOLERANCE = 0.087;
+    private static final double LOCATION_TOLERANCE = 0.05;
+    private static final double GOAL_LOCATION_TOLERANCE = 0.02;
+    private static final double BUMP_TOLERANCE = 0.005;
+    private static final double GOAL_ROTATION_TOLERANCE = 7;
 
     private static final int FRONT_CAR = 0;
     private static final int BACK_CAR = 1;
@@ -112,6 +114,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         streamManager.addRigidBodyUpdateListener(this);
         streamManager.addFrameUpdateListener(this);
         new Thread(streamManager).start();
+        setFocusable(true);
+        requestFocus();
         addKeyListener(this);
     }
 
@@ -236,17 +240,17 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     @Override
     public void frameUpdateReceived() {
-        if (frontCar.getLocation().distanceFrom(frontCarInitialPosition) > LOCATION_TOLERANCE) {
+        if (frontCar.getLocation().distanceFrom(frontCarInitialPosition) > BUMP_TOLERANCE) {
             System.out.println("Game over! Front car bumped!");
         }
-        if (backCar.getLocation().distanceFrom(backCarInitialPosition) > LOCATION_TOLERANCE) {
+        if (backCar.getLocation().distanceFrom(backCarInitialPosition) > BUMP_TOLERANCE) {
             System.out.println("Game over! Rear car bumped!");
             Vector3D v = backCar.getLocation();
             System.out.printf("%.2f %.2f %.2f vs %.2f %.2f %.2f\n",
                     v.x, v.y, v.z, backCarInitialPosition.x, backCarInitialPosition.y, backCarInitialPosition.z);
         }
-        if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < LOCATION_TOLERANCE
-                && Math.abs(rotations[PLAYER_CAR] - initialRotations[PLAYER_CAR]) < ROTATION_TOLERANCE) {
+        if (playing && playerCar.getLocation().distanceFrom(playerCarGoalPosition) < GOAL_LOCATION_TOLERANCE
+                && Math.abs(rotations[PLAYER_CAR] - initialRotations[PLAYER_CAR]) < GOAL_ROTATION_TOLERANCE) {
             System.out.println("You win!");
         }
         if (laneDirection == null && frontCarInitialPosition != null
