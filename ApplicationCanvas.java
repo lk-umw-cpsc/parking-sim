@@ -157,7 +157,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
         double r = -(rot + rotations[car] - initialRotations[car]);
         if (Double.isNaN(r)) {
-            r = rot;
+            r = -rot;
         }
 
         System.out.printf("%d: %.2f\n", car, r);
