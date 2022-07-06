@@ -132,12 +132,10 @@ public class CommandStreamManager implements Runnable {
      */
     private void handleFrameDataV2_1_1(ByteBuffer buffer) {
         short bufferSize = buffer.getShort();
-        // dumpBuffer(buffer.array(), bufferSize);
+        
         int frameNumber = buffer.getInt();
         final int markerSetCount = buffer.getInt();
-        // System.out.printf("buffer size: %d\nframe no: %d\nmarket set count: %d\n",
-        //         bufferSize, frameNumber, markerSetCount);
-        // List<String> modelNames = new ArrayList<>();
+        
         for (int markerSet = 0; markerSet < markerSetCount; markerSet++) {
             byte c = 1;
             int offset = buffer.position();
@@ -146,20 +144,16 @@ public class CommandStreamManager implements Runnable {
                 c = buffer.get();
                 size++;
             }
-            // try {
-            //     System.out.println(new String(buffer.array(), offset, size, 
-            //             "UTF-8"));
-            // } catch (UnsupportedEncodingException ex) {}
+            
             int markerCount = buffer.getInt();
             for (int marker = 0; marker < markerCount; marker++) {
                 float x = buffer.getFloat();
                 float y = buffer.getFloat();
                 float z = buffer.getFloat();
-                // System.out.printf("%d %.2f %.2f %.2f\n", marker, x, y, z);
             }
         }
         final int unlabeledMarkerCount = buffer.getInt();
-        // System.out.printf("ulmarker count: %d\n", unlabeledMarkerCount);
+
         for (int marker = 0; marker < unlabeledMarkerCount; marker++) {
             float x = buffer.getFloat();
             float y = buffer.getFloat();
@@ -167,7 +161,6 @@ public class CommandStreamManager implements Runnable {
         }
 
         final int rigidBodyCount = buffer.getInt();
-        // System.out.printf("RB count: %d\n", rigidBodyCount);
         for (int body = 0; body < rigidBodyCount; body++) {
             // id (this will come into play when we have multiple bodies)
             int bodyID = buffer.getInt();
@@ -175,8 +168,8 @@ public class CommandStreamManager implements Runnable {
             float x = buffer.getFloat();
             float y = buffer.getFloat();
             float z = buffer.getFloat();
-            // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
-            // unneeded rotational information
+            
+            // rotation as a quaternion
             float qx = buffer.getFloat();
             float qy = buffer.getFloat();
             float qz = buffer.getFloat();
@@ -187,9 +180,6 @@ public class CommandStreamManager implements Runnable {
                     listener.rigidBodyUpdateReceived(bodyID, x, y, z,
                             qw, qx, qy, qz);
             }
-
-            // System.out.printf("rb id %d: %.2f, %.2f, %.2f ... %.2f, %.2f, %.2f, %.2f\n",
-            //         bodyID, x, y, z, quaternions[0], quaternions[1], quaternions[2], quaternions[3]);
 
             // get rid of junk in the way
             buffer.getFloat();
