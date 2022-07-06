@@ -23,6 +23,16 @@ import vector.Quaternion;
 import vector.Vector2D;
 import vector.Vector3D;
 
+/**
+ * This class defines the behavior of the animated panel for the game
+ * where the car, score, etc. appear.
+ * 
+ * The animation of the panel is driven by the frameUpdateReceived method,
+ * which is called by the CommandStreamManager created within this class's
+ * constructor.
+ * 
+ * @author Lauren Knight
+ */
 public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener,
         FrameUpdateListener, KeyListener {
     
@@ -42,6 +52,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private static final int PLAYER_CAR = 0;
     private static final int ALIGNMENT_TOOL = 1;
 
+    private static final int TIME_PER_ROUND = 3 * 60 * 1000; // 3 minutes
+
     private double roomXLowerBound = DEFAULT_ROOM_X_LOWER_LIMIT;
     private double roomYLowerBound = DEFAULT_ROOM_Y_LOWER_LIMIT;
     private double roomWidth = DEFAULT_ROOM_WIDTH;
@@ -53,8 +65,6 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private Vector3D alignmentToolInitialPosition;
     private Vector3D playerCarInitialPosition;
     
-    private Quaternion playerCarInitialRotation;
-
     private double[] initialRotationsRadians = new double[2];
     private double[] rotations = new double[2];
 
@@ -62,13 +72,19 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private SceneObject goal;
 
     private boolean playing;
+    private int score;
+    private int highscore;
+    private long roundOverTime;
 
     private SceneObject[] sceneObjects = new SceneObject[2];
 
-    private BufferedImage[] carImages = new BufferedImage[3];
+    private BufferedImage carImage;
 
     private double rotationOffsetRadians;
 
+    /**
+     * Initializes the ApplicationCanvas
+     */
     public ApplicationCanvas() {
         // set size of the canvas
         setPreferredSize(new Dimension(CANVAS_WIDTH_HEIGHT, CANVAS_WIDTH_HEIGHT));
@@ -78,31 +94,34 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         goal = new SceneObject();
 
         try {
-            carImages[0] = ImageIO.read(new File("images/car-green.png"));
-            carImages[1] = ImageIO.read(new File("images/car-yellow.png"));
-            carImages[2] = ImageIO.read(new File("images/car-purple.png"));
+            carImage = squarifyImage(ImageIO.read(new File("images/car-yellow.png")));
         } catch (IOException e) {
             System.out.println("Unable to load car images!");
             e.printStackTrace();
         }
 
-        for (int i = 0; i < carImages.length; i++) {
-            carImages[i] = squarifyImage(carImages[i]);
-        }
-
-        sceneObjects[ALIGNMENT_TOOL] = alignmentTool;
         sceneObjects[PLAYER_CAR] = playerCar;
+        sceneObjects[ALIGNMENT_TOOL] = alignmentTool;
 
         // begin listening for updates from Motive
         CommandStreamManager streamManager = new CommandStreamManager();
         streamManager.addRigidBodyUpdateListener(this);
         streamManager.addFrameUpdateListener(this);
         new Thread(streamManager).start();
+
         setFocusable(true);
         requestFocus();
+
         addKeyListener(this);
     }
 
+    /**
+     * Expands the dimensions of an image without altering the original
+     * image, making the width and height equal and centering the original
+     * image in the middle of the new image.
+     * @param img The image to 'squarify'
+     * @return A new BufferedImage containing the expanded image
+     */
     private BufferedImage squarifyImage(BufferedImage img) {
         int newWidthHeight = Math.max(img.getWidth(), img.getHeight());
         BufferedImage newImg = new BufferedImage(newWidthHeight, newWidthHeight, BufferedImage.TYPE_4BYTE_ABGR);
@@ -110,8 +129,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         return newImg;
     }
 
-    // colors for the dots drawn to the screen
+    // Colors for the paint method
     private static final Color BACKGROUND_COLOR = new Color(51, 51, 51);
+    private static final Color GOAL_COLOR = Color.GREEN;
+    private static final Color TEXT_COLOR = Color.WHITE;
 
     @Override
     public void paint(Graphics g) {
@@ -126,23 +147,38 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.fillRect(0, 0, width, height);
         
         drawCar(g2d, width, height, PLAYER_CAR);
-        g.setColor(Color.GREEN);
-        Point p = goal.getScreenLocation(roomXLowerBound, roomYLowerBound, roomWidth, roomLength, width, height);
-        g.drawOval(p.x - 8, p.y - 8, 17, 17);
+        g.setColor(GOAL_COLOR);
+        Point p = goal.getScreenLocation(roomXLowerBound, roomYLowerBound,
+                roomWidth, roomLength, width, height);
+        g.fillOval(p.x - 8, p.y - 8, 17, 17);
+
+        g.setColor(TEXT_COLOR);
+        long timeRemaining = (roundOverTime - System.currentTimeMillis()) / 1000;
+        long minutes = timeRemaining / 60;
+        long seconds = timeRemaining % 60;
+        if (playing) {
+            g.drawString(String.format("%d:%02d", minutes, seconds), 8, 20);
+            g.drawString(String.format("Score: %d", score), 8, 36);
+            if (highscore > 0) {
+                g.drawString(String.format("Highscore: %d", highscore), 8, 52);
+            }
+        } else {
+            g.drawString("Press any key to play!", 232, 305);
+        }
     }
 
     private final Random rng = new Random();
 
     private void moveGoal() {
         Vector3D location = goal.getLocation();
-        location.x = rng.nextDouble() * roomWidth + roomXLowerBound;
-        location.y = rng.nextDouble() * roomLength + roomYLowerBound;
+        location.x = (rng.nextDouble() * 0.9 + 0.05) * roomWidth + roomXLowerBound;
+        location.y = (rng.nextDouble() * 0.9 + 0.05) * roomLength + roomYLowerBound;
     }
 
     private void drawCar(Graphics2D g, int width, int height, int car) {
         Point p = sceneObjects[car].getScreenLocation(roomXLowerBound, roomYLowerBound,
                 roomWidth, roomLength, width, height);
-        BufferedImage image = carImages[1];
+        BufferedImage image = carImage;
         int halfImageWidth = image.getWidth(null) / 2;
         int halfImageHeight = image.getHeight(null) / 2;
 
@@ -153,21 +189,13 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         if (Double.isNaN(r)) {
             r = -rotationOffsetRadians;
         }
-        // if (car == PLAYER_CAR) {
-        //     System.out.printf("%.2f vs %.2f\n", rotations[car], initialRotations[car]);
-        // }
 
         AffineTransform tx = AffineTransform.getRotateInstance(
                 r, halfImageWidth, halfImageHeight);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
 
-        // BufferedImage tmp = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-        // op.filter(image, tmp);
-
         // Drawing the rotated image at the required drawing locations
         g.drawImage(op.filter(image, null), p.x, p.y, null);
-
-        // g.drawImage(tmp, p.x, p.y, null);
     }
 
     /**
@@ -181,29 +209,35 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     /**
-     * Updates the room dimensions used by the application and then
-     * redraws the scene.
-     * @param xLowerBound the left-most X coordinate that should correlate to the left of the screen
-     * @param yLowerBound the bottom-most Y coordinate that should correlate to the bottom of the screen
-     * @param width the width of the room
-     * @param length the height of the room
+     * Initializes the round, resetting the score to 0,
+     * moving the goal and setting the timer.
      */
-    public void setRoomDimensions(double xLowerBound, double yLowerBound, double width, double length) {
-        roomXLowerBound = xLowerBound;
-        roomYLowerBound = yLowerBound;
-        roomWidth = width;
-        roomLength = length;
-        repaint();
+    private void initRound() {
+        score = 0;
+        moveGoal();
+        roundOverTime = System.currentTimeMillis() + TIME_PER_ROUND;
+    }
+
+    /**
+     * Determines whether the game timer is up.
+     * @return true if the timer has passed, otherwise false.
+     */
+    private boolean isRoundOver() {
+        return System.currentTimeMillis() >= roundOverTime;
     }
 
     @Override
+    /**
+     * Method called once per frame for each rigid body being tracked
+     * by Motive.
+     */
     public void rigidBodyUpdateReceived(int id, float x, float y, float z,
             float qw, float qx, float qy, float qz) {
         if (id > 1) {
             return;
         }
         Quaternion quaternion = new Quaternion(qw, qx, qy, qz);
-        double rotationRadians = quaternion.toForwardVector().to2DDirectionVector().getTheta();
+        double rotationRadians = quaternion.toUpVector().to2DDirectionVector().getTheta();
         rotations[id] = rotationRadians;
         switch (id) {
             case ALIGNMENT_TOOL:
@@ -217,7 +251,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
                     playerCarInitialPosition = new Vector3D(x, y, z);
                     initialRotationsRadians[PLAYER_CAR] = rotationRadians;
                     roomXLowerBound = x - roomWidth / 2;
-                    roomYLowerBound = y - roomLength / 2;
+                    roomYLowerBound = -y - roomLength / 2;
                 }
                 goal.getLocation().z = z;
                 
@@ -228,16 +262,26 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     @Override
+    /**
+     * Method called each time a frame packet is received from Motive
+     */
     public void frameUpdateReceived() {
         if (playing && playerCar.getLocation().distanceFrom(goal.getLocation()) < GOAL_LOCATION_TOLERANCE) {
+            score++;
             moveGoal();
         }
         if (alignmentVector == null && alignmentToolInitialPosition != null
                 && playerCarInitialPosition != null) {
-            Vector2D it2d = new Vector2D(alignmentToolInitialPosition.x, alignmentToolInitialPosition.y);
+            Vector2D at2d = new Vector2D(alignmentToolInitialPosition.x, alignmentToolInitialPosition.y);
             Vector2D pc2d = new Vector2D(playerCarInitialPosition.x, playerCarInitialPosition.y);
-            alignmentVector = pc2d.directionTowards(it2d);
+            alignmentVector = pc2d.directionTowards(at2d);
             rotationOffsetRadians = Math.atan2(alignmentVector.y, alignmentVector.x);
+        }
+        if (isRoundOver()) {
+            playing = false;
+            if (score > highscore) {
+                highscore = score;
+            }
         }
         repaint();
     }
@@ -248,9 +292,15 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     @Override
+    /**
+     * Method called by Swing when a key is pressed while the
+     * window has focus
+     */
     public void keyPressed(KeyEvent e) {
-        moveGoal();
-        playing = true;
+        if (!playing) {
+            initRound();
+            playing = true;
+        }
     }
 
     @Override

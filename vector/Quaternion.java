@@ -1,5 +1,11 @@
 package vector;
 
+/**
+ * This class defines a quaternion with w, x, y, and z components, which
+ * are used by Motive to define the rotation of a tracked object.
+ * 
+ * @author Lauren Knight
+ */
 public class Quaternion {
     public double w, x, y, z;
 
@@ -10,7 +16,7 @@ public class Quaternion {
         this.z = z;
     }
 
-    public Vector3D toForwardVector() {
+    public Vector3D toUpVector() {
         return new Vector3D(
             2 * (x*y - w*z),
             1 - 2 * (x * x + z * z),

@@ -2,6 +2,8 @@ package vector;
 
 /**
  * This class represents a three-dimensional vector, with x, y and z components.
+ * 
+ * @author Lauren Knight
  */
 public class Vector3D {
     public double x, y, z;
@@ -12,6 +14,12 @@ public class Vector3D {
         this.z = z;
     }
 
+    /**
+     * Converts this 3D vector to a normalized 2D vector, using
+     * the vector's x and y components.
+     * @return a new Vector2D containing the x and y components of the
+     * normalized vector.
+     */
     public Vector2D to2DDirectionVector() {
         double dx = x;
         double dy = y;

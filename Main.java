@@ -2,6 +2,8 @@ import javax.swing.SwingUtilities;
 
 /**
  * Program entry point
+ * 
+ * @author Lauren Knight
  */
 public class Main {
 

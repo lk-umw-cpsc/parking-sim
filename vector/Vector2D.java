@@ -1,5 +1,12 @@
 package vector;
 
+/**
+ * This class defines a two-dimensional vector with x and y components.
+ * It contains methods for determining distances and other useful
+ * vector operations.
+ * 
+ * @author Lauren Knight
+ */
 public class Vector2D {
 
     public double x;

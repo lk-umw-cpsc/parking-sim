@@ -535,6 +535,12 @@ public class CommandStreamManager implements Runnable {
         }
     }
 
+    /**
+     * Dumps the contents of a given byte array/buffer as hexadecimal
+     * to System.out.
+     * @param array the array/buffer to dump
+     * @param messageLength the length of the contents to dump
+     */
     private static void dumpBuffer(final byte[] array, final int messageLength) {
         for (int i = 0; i < messageLength; i++) {
             System.out.printf("%02X ", array[i]);
