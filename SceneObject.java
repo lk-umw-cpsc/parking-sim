@@ -9,7 +9,7 @@ public class SceneObject {
 
     public SceneObject() {
         location = new Vector3D(0, 0, 0);
-        rotation = new Quaternion(0, 0, 0, 1);
+        rotation = new Quaternion(1, 0, 0, 0);
     }
 
     public void moveTo(double x, double y, double z) {
@@ -18,11 +18,11 @@ public class SceneObject {
         location.z = z;
     }
 
-    public void rotateTo(double x, double y, double z, double w) {
+    public void rotateTo(double w, double x, double y, double z) {
+        rotation.w = w;   
         rotation.x = x;
         rotation.y = y;
         rotation.z = z;
-        rotation.w = w;   
     }
 
     public Vector3D getLocation() {

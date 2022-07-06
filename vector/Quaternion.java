@@ -12,10 +12,15 @@ public class Quaternion {
 
     public Vector3D toForwardVector() {
         return new Vector3D(
-            2 * (x * z - w * y),
-            2 * (y * z + w * x),
-            1 - 2 * (x * x + y * y)
+            2 * (x*y - w*z),
+            1 - 2 * (x * x + z * z),
+            2 * (y * z + w * x)
         );
+        // return new Vector3D(
+        //     2 * (x*z + w*y),
+        //     2 * (y*z - w*x),
+        //     1 - 2 * (x*x + y*y)
+        // );
     }
 
 }

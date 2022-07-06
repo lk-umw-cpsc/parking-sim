@@ -101,7 +101,7 @@ public class CommandStreamManager implements Runnable {
             DatagramPacket sent = new DatagramPacket(buffer, buffer.length, 
                     address, MOTIVE_COMMAND_PORT);
             wrapper.putShort(MESSAGE_KEEP_ALIVE);
-                socket.send(sent);
+            socket.send(sent);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -176,18 +176,16 @@ public class CommandStreamManager implements Runnable {
             float y = buffer.getFloat();
             float z = buffer.getFloat();
             // System.out.printf("id: %d %.2f %.2f %.2f\n", bodyID, x, y, z);
-            float[] quaternions = new float[4];
             // unneeded rotational information
-            quaternions[0] = buffer.getFloat();
-            quaternions[1] = buffer.getFloat();
-            quaternions[2] = buffer.getFloat();
-            quaternions[3] = buffer.getFloat();
+            float qx = buffer.getFloat();
+            float qy = buffer.getFloat();
+            float qz = buffer.getFloat();
+            float qw = buffer.getFloat();
 
             for (RigidBodyUpdateListener listener : rigidBodyUpdateListeners) {
                 if (listener != null)
                     listener.rigidBodyUpdateReceived(bodyID, x, y, z,
-                            quaternions[0], quaternions[1], 
-                            quaternions[2], quaternions[3]);
+                            qw, qx, qy, qz);
             }
 
             // System.out.printf("rb id %d: %.2f, %.2f, %.2f ... %.2f, %.2f, %.2f, %.2f\n",
