@@ -27,6 +27,8 @@ import vector.Vector3D;
  * This class defines the behavior of the animated panel for the game
  * where the car, score, etc. appear.
  * 
+ * The game "loop" is defined within this class.
+ * 
  * The animation of the panel is driven by the frameUpdateReceived method,
  * which is called by the CommandStreamManager created within this class's
  * constructor.
