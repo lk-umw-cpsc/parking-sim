@@ -178,6 +178,9 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         }
     }
 
+    /**
+     * Moves the goal to a new, random location
+     */
     private void moveGoal() {
         Vector3D location = goal.getLocation();
         Vector3D playerLocation = playerCar.getLocation();
