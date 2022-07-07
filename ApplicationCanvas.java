@@ -315,11 +315,6 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    @Override
     /**
      * Method called by Swing when a key is pressed while the
      * window has focus
@@ -332,8 +327,9 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        
-    }
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
 
 }
