@@ -137,6 +137,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private static final Color GOAL_COLOR = Color.GREEN;
     private static final Color TEXT_COLOR = Color.WHITE;
 
+    /**
+     * This method is called each time the component needs to redraw itself.
+     * This method is called once each time repaint() is called.
+     */
     @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g;
