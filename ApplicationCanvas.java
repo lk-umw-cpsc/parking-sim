@@ -69,7 +69,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
     private Vector3D playerCarInitialPosition;
     
     private double[] initialRotationsRadians = new double[2];
-    private double[] rotations = new double[2];
+    private double[] rotationsRadians = new double[2];
 
     private Vector2D alignmentVector;
     private SceneObject goal;
@@ -214,7 +214,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         p.x -= halfImageWidth;
         p.y -= halfImageHeight;
 
-        double r = -(rotationOffsetRadians + rotations[car] - initialRotationsRadians[car]);
+        double r = -(rotationOffsetRadians + rotationsRadians[car] - initialRotationsRadians[car]);
         if (Double.isNaN(r)) {
             r = -rotationOffsetRadians;
         }
@@ -267,7 +267,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         }
         Quaternion quaternion = new Quaternion(qw, qx, qy, qz);
         double rotationRadians = quaternion.toUpVector().to2DDirectionVector().getTheta();
-        rotations[id] = rotationRadians;
+        rotationsRadians[id] = rotationRadians;
         switch (id) {
             case ALIGNMENT_TOOL:
                 if (alignmentToolInitialPosition == null) {
