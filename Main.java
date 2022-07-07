@@ -40,7 +40,8 @@ import javax.swing.SwingUtilities;
  * 
  * Note that you DO NOT need to recalibrate the OptiTrack cameras
  * again unless they are moved/bumped. For this reason, for the sake
- * of saving time, I recommend leaving the cameras in place.
+ * of saving time, I recommend leaving the cameras in place between
+ * sessions
  * 
  * @author Lauren Knight
  */
