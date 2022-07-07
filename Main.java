@@ -11,8 +11,7 @@ import javax.swing.SwingUtilities;
  * enable "Broadcast Frame Data",
  * set Local Interface to "loopback",
  * set Up Axis to "Z Up",
- * 
- * See "images/Motive Setting.PNG" for exact settings used.
+ * (See "images/Motive Setting.PNG" for exact settings used)
  * 
  * Instructions for use:
  * 
@@ -26,11 +25,14 @@ import javax.swing.SwingUtilities;
  * Create another rigid body with the alignment tool's markers,
  * giving it an ID of 1.
  * 
- * Start the Java program, using this class as the main class.
- * Press any key to start playing!
+ * (The alignment tool ensures that the virtual car faces the correct
+ * direction.)
  * 
- * The alignment tool ensures that the virtual car faces the correct
- * direction.
+ * Start the Java program, using this class as the main class.
+ * Remove the alignment tool from the table. The alignment tool
+ * will need to be placed in front of the car again each time
+ * the program is restarted, but not between rounds.
+ * Press any key to start playing!
  * 
  * @author Lauren Knight
  */
