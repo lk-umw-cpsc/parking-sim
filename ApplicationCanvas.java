@@ -187,6 +187,14 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         } while (playerLocation.distanceFrom(location) < GOAL_LOCATION_TOLERANCE);
     }
 
+    /**
+     * Draws the player's car to the screen based on its location in the scene.
+     * Rotates the car image based on the rotation of the car in the scene.
+     * @param g The canvas to draw to
+     * @param width The width of the canvas
+     * @param height The height of the canvas
+     * @param car The index of the car's SceneObject in the sceneObjects array
+     */
     private void drawCar(Graphics2D g, int width, int height, int car) {
         Point p = sceneObjects[car].getScreenLocation(roomXLowerBound, roomYLowerBound,
                 roomWidth, roomLength, width, height);
