@@ -56,6 +56,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     private double roomXLowerBound = DEFAULT_ROOM_X_LOWER_LIMIT;
     private double roomYLowerBound = DEFAULT_ROOM_Y_LOWER_LIMIT;
+    private double roomYLowerBoundGoal;
     private double roomWidth = DEFAULT_ROOM_WIDTH;
     private double roomLength = DEFAULT_ROOM_LENGTH;
 
@@ -70,6 +71,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     private Vector2D alignmentVector;
     private SceneObject goal;
+
+    private final Random rng = new Random();
 
     private boolean playing;
     private int score;
@@ -147,10 +150,12 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.fillRect(0, 0, width, height);
         
         drawCar(g2d, width, height, PLAYER_CAR);
-        g.setColor(GOAL_COLOR);
-        Point p = goal.getScreenLocation(roomXLowerBound, roomYLowerBound,
-                roomWidth, roomLength, width, height);
-        g.fillOval(p.x - 8, p.y - 8, 17, 17);
+        if (playing) {
+            g.setColor(GOAL_COLOR);
+            Point p = goal.getScreenLocation(roomXLowerBound, roomYLowerBound,
+                    roomWidth, roomLength, width, height);
+            g.fillOval(p.x - 8, p.y - 8, 17, 17);
+        }
 
         g.setColor(TEXT_COLOR);
         long timeRemaining = (roundOverTime - System.currentTimeMillis()) / 1000;
@@ -163,16 +168,23 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
                 g.drawString(String.format("Highscore: %d", highscore), 8, 52);
             }
         } else {
-            g.drawString("Press any key to play!", 232, 305);
+            g.drawString("Press any key to play!", 240, 385);
+            if (score > 0) {
+                g.drawString(String.format("Previous score: %d", score), 250, 411);
+            }
+            if (highscore > 0) {
+                g.drawString(String.format("Highscore: %d", highscore), 264, 427);
+            }
         }
     }
 
-    private final Random rng = new Random();
-
     private void moveGoal() {
         Vector3D location = goal.getLocation();
-        location.x = (rng.nextDouble() * 0.9 + 0.05) * roomWidth + roomXLowerBound;
-        location.y = (rng.nextDouble() * 0.9 + 0.05) * roomLength + roomYLowerBound;
+        Vector3D playerLocation = playerCar.getLocation();
+        do {
+            location.x = (rng.nextDouble() * 0.85 + 0.075) * roomWidth + roomXLowerBound;
+            location.y = (rng.nextDouble() * 0.85 + 0.075) * roomLength + roomYLowerBoundGoal;
+        } while (playerLocation.distanceFrom(location) < GOAL_LOCATION_TOLERANCE);
     }
 
     private void drawCar(Graphics2D g, int width, int height, int car) {
@@ -252,6 +264,7 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
                     initialRotationsRadians[PLAYER_CAR] = rotationRadians;
                     roomXLowerBound = x - roomWidth / 2;
                     roomYLowerBound = -y - roomLength / 2;
+                    roomYLowerBoundGoal = y - roomLength / 2;
                 }
                 goal.getLocation().z = z;
                 
