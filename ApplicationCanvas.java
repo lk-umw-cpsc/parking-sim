@@ -289,10 +289,10 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         obj.rotateTo(qw, qx, qy, qz);
     }
 
-    @Override
     /**
      * Method called each time a frame packet is received from Motive
      */
+    @Override
     public void frameUpdateReceived() {
         if (playing && playerCar.getLocation().distanceFrom(goal.getLocation()) < GOAL_LOCATION_TOLERANCE) {
             score++;
