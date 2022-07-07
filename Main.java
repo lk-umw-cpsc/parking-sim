@@ -34,6 +34,10 @@ import javax.swing.SwingUtilities;
  * the program is restarted, but not between rounds.
  * Press any key to start playing!
  * 
+ * Note that you DO NOT need to recalibrate the OptiTrack cameras
+ * again unless they are moved/bumped. For this reason, for the sake
+ * of saving time, I recommend leaving the cameras in place.
+ * 
  * @author Lauren Knight
  */
 public class Main {
