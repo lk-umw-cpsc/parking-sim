@@ -51,8 +51,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     private static final double GOAL_LOCATION_TOLERANCE = 0.105;
 
-    private static final int PLAYER_CAR = 0;
-    private static final int ALIGNMENT_TOOL = 1;
+    private static final int ID_PLAYER_CAR = 0;
+    private static final int ID_ALIGNMENT_TOOL = 1;
 
     private static final int TIME_PER_ROUND = 3 * 60 * 1000; // 3 minutes
 
@@ -105,8 +105,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
             e.printStackTrace();
         }
 
-        sceneObjects[PLAYER_CAR] = playerCar;
-        sceneObjects[ALIGNMENT_TOOL] = alignmentTool;
+        sceneObjects[ID_PLAYER_CAR] = playerCar;
+        sceneObjects[ID_ALIGNMENT_TOOL] = alignmentTool;
 
         // begin listening for updates from Motive
         CommandStreamManager streamManager = new CommandStreamManager();
@@ -155,7 +155,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         g.setColor(BACKGROUND_COLOR);
         g.fillRect(0, 0, width, height);
         
-        drawCar(g2d, width, height, PLAYER_CAR);
+        drawCar(g2d, width, height);
+
         if (playing) {
             g.setColor(GOAL_COLOR);
             Point p = goal.getScreenLocation(roomXLowerBound, roomYLowerBound,
@@ -198,14 +199,13 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
 
     /**
      * Draws the player's car to the screen based on its location in the scene.
-     * Rotates the car image based on the rotation of the car in the scene.
+     * Rotates the car image based on the rotation of the physical car.
      * @param g The canvas to draw to
      * @param width The width of the canvas
      * @param height The height of the canvas
-     * @param car The index of the car's SceneObject in the sceneObjects array
      */
-    private void drawCar(Graphics2D g, int width, int height, int car) {
-        Point p = sceneObjects[car].getScreenLocation(roomXLowerBound, roomYLowerBound,
+    private void drawCar(Graphics2D g, int width, int height) {
+        Point p = playerCar.getScreenLocation(roomXLowerBound, roomYLowerBound,
                 roomWidth, roomLength, width, height);
         BufferedImage image = carImage;
         int halfImageWidth = image.getWidth(null) / 2;
@@ -214,7 +214,8 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         p.x -= halfImageWidth;
         p.y -= halfImageHeight;
 
-        double r = -(rotationOffsetRadians + rotationsRadians[car] - initialRotationsRadians[car]);
+        double r = -(rotationOffsetRadians + rotationsRadians[ID_PLAYER_CAR] 
+                - initialRotationsRadians[ID_PLAYER_CAR]);
         if (Double.isNaN(r)) {
             r = -rotationOffsetRadians;
         }
@@ -269,16 +270,16 @@ public class ApplicationCanvas extends JPanel implements RigidBodyUpdateListener
         double rotationRadians = quaternion.toUpVector().to2DDirectionVector().getTheta();
         rotationsRadians[id] = rotationRadians;
         switch (id) {
-            case ALIGNMENT_TOOL:
+            case ID_ALIGNMENT_TOOL:
                 if (alignmentToolInitialPosition == null) {
                     alignmentToolInitialPosition = new Vector3D(x, y, z);
-                    initialRotationsRadians[ALIGNMENT_TOOL] = rotationRadians;
+                    initialRotationsRadians[ID_ALIGNMENT_TOOL] = rotationRadians;
                 }
                 break;
-            case PLAYER_CAR:
+            case ID_PLAYER_CAR:
                 if (playerCarInitialPosition == null) {
                     playerCarInitialPosition = new Vector3D(x, y, z);
-                    initialRotationsRadians[PLAYER_CAR] = rotationRadians;
+                    initialRotationsRadians[ID_PLAYER_CAR] = rotationRadians;
                     roomXLowerBound = x - roomWidth / 2;
                     roomYLowerBound = -y - roomLength / 2;
                     roomYLowerBoundGoal = y - roomLength / 2;
