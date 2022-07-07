@@ -34,6 +34,10 @@ import javax.swing.SwingUtilities;
  * the program is restarted, but not between rounds.
  * Press any key to start playing!
  * 
+ * Play the game by driving the RC car into the
+ * virtual points on screen. Use the top-down view
+ * to tell where you need to drive the car.
+ * 
  * Note that you DO NOT need to recalibrate the OptiTrack cameras
  * again unless they are moved/bumped. For this reason, for the sake
  * of saving time, I recommend leaving the cameras in place.
